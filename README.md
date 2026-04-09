@@ -1,58 +1,86 @@
-# rest-json-quickstart
+# 新人向けチュートリアル (rest-json-quickstart)
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+このプロジェクトは、環境構築が完了した新人が Quarkus を実際に動かし、ソースコードの構造を理解するためのチュートリアルです。
+公式の [REST JSON Quickstart](https://quarkus.io/guides/rest-json) をベースにしていますが、プロジェクト固有の設定が含まれています。
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## 1. アプリケーションの起動方法
 
-## Running the application in dev mode
+Quarkus の **Dev Mode** を使用すると、コードの変更が即座に反映されます（ライブコーディング機能）。
+本プロジェクトでは、ビルド時に特定のフラグが必要です。
 
-You can run your application in dev mode that enables live coding using:
-
-```shell script
-./gradlew quarkusDev
+```shell
+./gradlew quarkusDev -Pbuild_logic=quarkus_3.15.2
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+> **注意:** 起動後、ブラウザで [http://localhost:8080/](http://localhost:8080/) にアクセスして、デフォルトのページが表示されることを確認してください。
 
-## Packaging and running the application
+---
 
-The application can be packaged using:
+## 2. ソースコードの構成
 
-```shell script
-./gradlew build
+このプロジェクトは、簡単な「フルーツ」と「豆類（Legume）」の情報を管理する REST API です。
+
+### ディレクトリ構成
+```text
+src/main/java/org/acme/rest/json/
+├── Fruit.java           # データモデル（フルーツ）
+├── FruitResource.java   # API エンドポイント（フルーツ用）
+├── Legume.java          # データモデル（豆類）
+└── LegumeResource.java  # API エンドポイント（豆類用）
 ```
 
-It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
+### 主要クラスの解説
 
-The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
+- **Fruit.java**:
+    - フルーツの名前 (`name`) と説明 (`description`) を持つシンプルな POJO です。
+- **FruitResource.java**:
+    - `/fruits` パスでアクセス可能な REST エンドポイントです。
+    - `@GET`: フルーツのリストを取得します。
+    - `@POST`: 新しいフルーツを追加します（メモリ上に一時保存されます）。
+- **LegumeResource.java**:
+    - `/legumes` パスでアクセス可能な REST エンドポイントです。
+    - こちらは読み取り専用の例として、固定のリストを返します。
 
-If you want to build an _über-jar_, execute the following command:
+---
 
-```shell script
-./gradlew build -Dquarkus.package.jar.type=uber-jar
+## 3. 動作確認
+
+起動したら、以下の方法で動作を確認してみましょう。
+
+### A. ブラウザで確認（UI）
+ブラウザで以下の URL にアクセスすると、データが表示される HTML ページが用意されています。
+- [http://localhost:8080/fruits.html](http://localhost:8080/fruits.html)
+- [http://localhost:8080/legumes.html](http://localhost:8080/legumes.html)
+
+### B. コマンドで確認 (curl)
+ターミナルから直接 API を叩いてみましょう。
+
+**データ取得 (GET):**
+```shell
+curl http://localhost:8080/fruits
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar build/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./gradlew build -Dquarkus.native.enabled=true
+**データ追加 (POST):**
+```shell
+curl -X POST -H "Content-Type: application/json" -d '{"name":"Banana","description":"Yellow fruit"}' http://localhost:8080/fruits
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+---
 
-```shell script
-./gradlew build -Dquarkus.native.enabled=true -Dquarkus.native.container-build=true
+## 4. 便利な機能
+
+### Dev UI
+Dev Mode で起動中、以下の URL から Quarkus の内部状態や設定を確認できる管理画面（Dev UI）にアクセスできます。
+- [http://localhost:8080/q/dev/](http://localhost:8080/q/dev/)
+
+### テストの実行
+ユニットテストを実行するには以下のコマンドを使用します。
+```shell
+./gradlew test -Pbuild_logic=quarkus_3.15.2
 ```
 
-You can then execute your native executable with: `./build/rest-json-quickstart-1.0.0-SNAPSHOT-runner`
+---
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/gradle-tooling>.
-
-## Related Guides
-
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
+## 次のステップ
+1. `FruitResource.java` の中身を書き換えて（例：初期データに自分の好きなフルーツを追加）、ブラウザをリロードしてみましょう。
+2. 新しいフィールドを `Fruit.java` に追加し、API の挙動がどう変わるか確認してみましょう。
